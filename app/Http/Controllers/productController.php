@@ -6,6 +6,7 @@ use App\Models\product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Laravel\Scout\Searchable;
+use function Laravel\Prompts\select;
 /**
  * @OA\Schema(
  *     schema="Product",
@@ -27,7 +28,8 @@ class productController extends Controller
     public function product(request $request)
     {
         $data = $request->validate([
-            'aisle_id' => 'required',
+            'rayon_id' => 'required',
+            'cateigorie_id' => 'required',
             'name' => 'required',
             'description' => 'required',
             'prace' => 'required',
@@ -40,7 +42,8 @@ class productController extends Controller
         ]);
 
         $aisle = product::create([
-            'aisle_id' => $data['aisle_id'],
+            'rayon_id' => $data['rayon_id'],
+            'cateigorie_id' => $data['cateigorie_id'],
             'name' => $data['name'],
             'description' => $data['description'],
             'prace' => $data['prace'],
@@ -60,8 +63,8 @@ class productController extends Controller
 
     public function liste_produits($id)
     {
-        $liste_produits = DB::table('aisles as a')
-            ->join('products as p', 'p.aisle_id', '=', 'a.id')
+        $liste_produits = DB::table('rayons as a')
+            ->join('products as p', 'p.rayon_id', '=', 'a.id')
             ->join('stocks as s', 's.product_id', '=', 'p.id')
             ->select('a.*', 'p.*', 's.*')
             ->where('p.id', '=', $id)
@@ -75,10 +78,15 @@ class productController extends Controller
 
     public function searchProduit(request $request)
     {
-        if ($request->has('prace')) {
-            $prace = $request->prace;
-            $produit = product::where('prace', 'like', '%' . $prace . '%')
+        if ($request->has('cateigorie')) {
+            $cateigorie = $request->cateigorie;
+
+            $produit = DB::table('products as p')
+                ->join('cateigories as c', 'p.cateigorie_id', '=', 'c.id')
+                ->where('c.name', 'like', '%' . $cateigorie . '%')
+                ->select('p.*', 'c.*')
                 ->get();
+
         } elseif ($request->has('name')) {
             $name = $request->name;
             $produit = product::where('name', 'like', '%' . $name . '%')
@@ -90,7 +98,7 @@ class productController extends Controller
         }
 
         return [
-            'message' => ' found',
+            'message' => 'found',
             'produit' => $produit
         ];
 
@@ -99,8 +107,8 @@ class productController extends Controller
     }
     public function produits_populaires($id)
     {
-        $produits_populaire = DB::table('aisles as a')
-            ->join('products as p', 'p.aisle_id', '=', 'a.id')
+        $produits_populaire = DB::table('rayons as a')
+            ->join('products as p', 'p.rayon_id', '=', 'a.id')
             ->join('stocks as s', 's.product_id', '=', 'p.id')
             ->select('a.*', 'p.*', 's.*')
             ->where('a.id', '=', $id)
@@ -112,10 +120,10 @@ class productController extends Controller
             'produits_populaires' => $produits_populaire
         ];
     }
-    public function produits_rayon($id)
+    public function produits_promotion($id)
     {
-        $produits_populaire = DB::table('aisles as a')
-            ->join('products as p', 'p.aisle_id', '=', 'a.id')
+        $produits_populaire = DB::table('rayons as a')
+            ->join('products as p', 'p.rayon_id', '=', 'a.id')
             ->join('stocks as s', 's.product_id', '=', 'p.id')
             ->select('a.*', 'p.*', 's.*')
             ->where('a.id', '=', $id)
@@ -128,5 +136,33 @@ class productController extends Controller
             'produits_populaires' => $produits_populaire
         ];
 
+    }
+
+    public function deleteproduit($id)
+    {
+        $rayon = product::find($id);
+        $rayon->delete();
+        return [
+            'message' => 'product deleted successfully'
+        ];
+    }
+
+    public function updateproduct(request $request, $id)
+    {
+
+        $product = product::find($id);
+
+        $product->rayon_id = $request->rayon_id;
+        $product->cateigorie_id = $request->cateigorie_id;
+        $product->name = $request->name;
+        $product->description = $request->description;
+        $product->prace = $request->prace;
+        $product->rating = $request->rating;
+        $product->sale_price = $request->sale_price;
+        $product->save();
+
+        return [
+            'message' => 'product update successfully'
+        ];
     }
 }

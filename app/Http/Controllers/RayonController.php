@@ -20,7 +20,7 @@ use App\Models\Rayon;
  */
 class RayonController extends Controller
 {
-    
+
     public function rayon(request $request)
     {
         $data = $request->validate([
@@ -32,11 +32,51 @@ class RayonController extends Controller
             'name' => $data['name'],
             'description' => $data['description'],
         ]);
-        
+
         return [
             "message" => "Rayons créés avec succès!",
             'aisle' => $rayon
         ];
     }
 
+    public function showRayon()
+    {
+        $rayon = Rayon::all();
+        return [
+            "all rayon" => $rayon,
+        ];
+    }
+    public function deleteRayon($id)
+    {
+        $rayon = Rayon::find($id);
+        $rayon->delete();
+        return [
+           'message' => 'Rayon deleted successfully'
+        ];
+    }
+    public function updateRayon(request $request,$id)
+    {
+        $rayon = Rayon::find($id);
+        $rayon->name = $request->name;
+        $rayon->description = $request->description;
+        $rayon->save();
+        return [
+            'message' => 'Rayon update successfully'
+         ];
+    }
+    public function searchRayon($search)
+    {
+        if ($search) {
+           
+            $Rayon = Rayon::where('name', 'like', '%' . $search . '%')
+                ->get();
+        } 
+        return [
+            'message' => ' found',
+            'Rayon' => $Rayon
+        ];
+
+
+
+    }
 }
