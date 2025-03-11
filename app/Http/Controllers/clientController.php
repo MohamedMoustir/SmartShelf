@@ -51,6 +51,6 @@ class clientController extends Controller
             'total_price' => $total_price,
         ], 201);
     }
-    
 
+   
 }

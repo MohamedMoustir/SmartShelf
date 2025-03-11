@@ -35,10 +35,6 @@ class productController extends Controller
             'prace' => 'required',
             'rating' => 'required',
             'sale_price' => 'required'
-
-
-
-
         ]);
 
         $aisle = product::create([
@@ -52,8 +48,6 @@ class productController extends Controller
 
 
         ]);
-
-
 
         return [
             "message" => "Produits créés avec succès!",
